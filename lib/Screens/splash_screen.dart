@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (user != null /* && user.emailVerified */) {
       // User is actually signed in — navigate to marketplace
-      Navigator.pushReplacementNamed(context, '/geolocation');
+      Navigator.pushReplacementNamed(context, '/bottomnavbar');
     } else {
       // Clear shared pref just in case it's stale
       final prefs = await SharedPreferences.getInstance();
