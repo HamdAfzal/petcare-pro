@@ -27,7 +27,6 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
   Future<void> _getUserLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled, show error or ask user to enable it
       setState(() {
         _isLoading = false;
       });
@@ -38,7 +37,6 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
     if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
       permission = await Geolocator.requestPermission();
       if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
-        // Permissions are denied, handle it gracefully
         setState(() {
           _isLoading = false;
         });
@@ -47,7 +45,6 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
     }
 
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-
     setState(() {
       _userPosition = position;
       _isLoading = false;
@@ -65,7 +62,6 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
     double lat = _userPosition!.latitude;
     double lon = _userPosition!.longitude;
 
-    // Map your filter to Foursquare categories or queries
     String query;
     switch (serviceType) {
       case 'Pet Shop':
@@ -112,25 +108,23 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
         print('Error fetching places: ${response.statusCode}');
         setState(() {
           _isLoading = false;
-          _locations = [];
         });
       }
     } catch (e) {
       print('Exception fetching places: $e');
       setState(() {
         _isLoading = false;
-        _locations = [];
       });
     }
   }
 
-  void _launchGoogleSearch(String query) async {
-    final url = Uri.encodeFull('https://www.google.com/search?q=$query');
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
+  Future<void> _openInGoogleMaps(String query) async {
+    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(query)}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not launch Google Search')),
+        const SnackBar(content: Text('Could not launch Google Maps')),
       );
     }
   }
@@ -138,16 +132,24 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nearby Pet Care Services')),
+      appBar: AppBar(
+        title: const Text('Nearby Pet Care Services'),
+        backgroundColor: Colors.teal,
+      ),
       body: _isLoading && _userPosition == null
           ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
+            padding: const EdgeInsets.all(12.0),
+            child: DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                labelText: 'Select Service Type',
+                filled: true,
+                fillColor: Colors.grey[100],
+              ),
               value: _selectedService,
-              hint: const Text("Select Service Type"),
               items: ["Pet Shop", "Veterinary", "Grooming"]
                   .map((service) => DropdownMenuItem<String>(
                 value: service,
@@ -156,38 +158,41 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
                   .toList(),
               onChanged: (value) {
                 if (value != null) {
-                  setState(() {
-                    _selectedService = value;
-                  });
+                  setState(() => _selectedService = value);
                   _fetchNearbyPlaces(value);
                 }
               },
             ),
           ),
-          // Map showing user location only
           if (_userPosition != null)
-            SizedBox(
-              height: 250,
-              child: FlutterMap(
-                options: MapOptions(
-                  center: LatLng(_userPosition!.latitude, _userPosition!.longitude),
-                  zoom: 13.0,
-                  interactiveFlags: InteractiveFlag.none, // disables map gestures
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: LatLng(_userPosition!.latitude, _userPosition!.longitude),
-                        builder: (ctx) => const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: SizedBox(
+                height: 220,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      center: LatLng(_userPosition!.latitude, _userPosition!.longitude),
+                      zoom: 13.0,
+                      interactiveFlags: InteractiveFlag.none,
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        subdomains: ['a', 'b', 'c'],
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(_userPosition!.latitude, _userPosition!.longitude),
+                            builder: (ctx) => const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           const SizedBox(height: 10),
@@ -207,11 +212,22 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
               itemCount: _locations.length,
               itemBuilder: (context, index) {
                 final place = _locations[index];
-                return ListTile(
-                  title: Text(place['name']),
-                  subtitle: Text(place['address']),
-                  trailing: const Icon(Icons.open_in_new),
-                  onTap: () => _launchGoogleSearch(place['name']),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                  child: Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 3,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(12),
+                      title: Text(
+                        place['name'],
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(place['address']),
+                      trailing: const Icon(Icons.directions, color: Colors.teal),
+                      onTap: () => _openInGoogleMaps(place['name']),
+                    ),
+                  ),
                 );
               },
             ),
