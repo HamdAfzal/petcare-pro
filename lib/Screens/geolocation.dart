@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:petcare/Services/colors.dart';  // Import your color class
 
 class GeolocationScreen extends StatefulWidget {
   @override
@@ -134,105 +135,135 @@ class _GeolocationScreenState extends State<GeolocationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nearby Pet Care Services'),
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.primaryColor, // Using primaryColor from AppColors
+        elevation: 0, // Make the AppBar flat
       ),
-      body: _isLoading && _userPosition == null
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                labelText: 'Select Service Type',
-                filled: true,
-                fillColor: Colors.grey[100],
-              ),
-              value: _selectedService,
-              items: ["Pet Shop", "Veterinary", "Grooming"]
-                  .map((service) => DropdownMenuItem<String>(
-                value: service,
-                child: Text(service),
-              ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedService = value);
-                  _fetchNearbyPlaces(value);
-                }
-              },
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primaryColor,
+              AppColors.secondaryColor,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          if (_userPosition != null)
+        ),
+        child: _isLoading && _userPosition == null
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+          children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: SizedBox(
-                height: 220,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: FlutterMap(
-                    options: MapOptions(
-                      center: LatLng(_userPosition!.latitude, _userPosition!.longitude),
-                      zoom: 13.0,
-                      interactiveFlags: InteractiveFlag.none,
+              padding: const EdgeInsets.all(12.0),
+              child: Material(
+                elevation: 5, // Shadow effect for the dropdown
+                borderRadius: BorderRadius.circular(10),
+                child: DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        subdomains: ['a', 'b', 'c'],
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(_userPosition!.latitude, _userPosition!.longitude),
-                            builder: (ctx) => const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
-                          ),
-                        ],
-                      ),
-                    ],
+                    labelText: 'Select Service Type',
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
+                  value: _selectedService,
+                  items: ["Pet Shop", "Veterinary", "Grooming"]
+                      .map((service) => DropdownMenuItem<String>(
+                    value: service,
+                    child: Text(service),
+                  ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedService = value);
+                      _fetchNearbyPlaces(value);
+                    }
+                  },
                 ),
               ),
             ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _locations.isEmpty
-                ? Center(
-              child: Text(
-                _selectedService == null
-                    ? 'Please select a service type above'
-                    : 'No nearby $_selectedService found',
-                style: const TextStyle(fontSize: 16),
-              ),
-            )
-                : ListView.builder(
-              itemCount: _locations.length,
-              itemBuilder: (context, index) {
-                final place = _locations[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-                  child: Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 3,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      title: Text(
-                        place['name'],
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+            if (_userPosition != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Container(
+                  height: 220,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
                       ),
-                      subtitle: Text(place['address']),
-                      trailing: const Icon(Icons.directions, color: Colors.teal),
-                      onTap: () => _openInGoogleMaps(place['name']),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: FlutterMap(
+                      options: MapOptions(
+                        center: LatLng(_userPosition!.latitude, _userPosition!.longitude),
+                        zoom: 13.0,
+                        interactiveFlags: InteractiveFlag.none,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                          subdomains: ['a', 'b', 'c'],
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: LatLng(_userPosition!.latitude, _userPosition!.longitude),
+                              builder: (ctx) => const Icon(Icons.person_pin_circle, color: Colors.blue, size: 40),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
+                ),
+              ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _locations.isEmpty
+                  ? Center(
+                child: Text(
+                  _selectedService == null
+                      ? 'Please select a service type above'
+                      : 'No nearby $_selectedService found',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              )
+                  : ListView.builder(
+                itemCount: _locations.length,
+                itemBuilder: (context, index) {
+                  final place = _locations[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                    child: Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4, // Adding shadow to the card
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(12),
+                        title: Text(
+                          place['name'],
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(place['address']),
+                        trailing: const Icon(Icons.directions, color: Colors.teal),
+                        onTap: () => _openInGoogleMaps(place['name']),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

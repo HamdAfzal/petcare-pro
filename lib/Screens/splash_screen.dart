@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:petcare/Services/auth_service.dart';
@@ -16,6 +15,9 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _logoController;
   late Animation<double> _logoAnimation;
   final AuthService _auth = AuthService();
+
+  final Color primaryColor = const Color(0xFF00BF8F);
+  final Color darkColor = const Color(0xFF001510);
 
   @override
   void initState() {
@@ -42,17 +44,13 @@ class _SplashScreenState extends State<SplashScreen>
     final user = _auth.getCurrentUser();
 
     if (user != null /* && user.emailVerified */) {
-      // User is actually signed in — navigate to marketplace
       Navigator.pushReplacementNamed(context, '/bottomnavbar');
     } else {
-      // Clear shared pref just in case it's stale
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', false);
-
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
-
 
   @override
   void dispose() {
@@ -64,36 +62,70 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final width = media.size.width;
-    final height = media.size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 2, 64, 45),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ScaleTransition(
-              scale: _logoAnimation,
-              child: Container(
-                width: width * 0.4,
-                height: width * 0.4,
-                child: Image.asset('assets/s1.png', fit: BoxFit.contain),
-              ),
-            ),
-            SizedBox(height: height * 0.04),
-            FadeTransition(
-              opacity: _logoAnimation,
-              child: Text(
-                'Pet Care',
-                style: TextStyle(
-                  fontSize: width * 0.08,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 1.5,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [primaryColor, darkColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Animated Logo
+              ScaleTransition(
+                scale: _logoAnimation,
+                child: Container(
+                  width: width * 0.45,
+                  height: width * 0.45,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/s1.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+
+              // Animated App Name
+              FadeTransition(
+                opacity: _logoAnimation,
+                child: Text(
+                  'Pet Care',
+                  style: TextStyle(
+                    fontSize: width * 0.09,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 10,
+                        color: Colors.black.withOpacity(0.5),
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:petcare/Services/auth_service.dart';
+import '../Services/colors.dart';
 import 'login_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -33,8 +34,8 @@ class _SignUpPageState extends State<SignUpPage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 2, 64, 45),
-              Color.fromARGB(255, 23, 237, 173),
+              AppColors.primaryColor,
+              AppColors.secondaryColor,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -49,20 +50,21 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Form(
               key: _formKey,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/login');
-                      },
+                  // Back Button
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 28,
                     ),
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
                   ),
+
+                  // Page Title
                   Center(
                     child: Text(
                       'Create Account',
@@ -76,6 +78,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 32),
 
+                  // First Name Input
                   _buildTextField(
                     controller: _firstNameController,
                     label: 'First Name',
@@ -83,6 +86,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Last Name Input
                   _buildTextField(
                     controller: _lastNameController,
                     label: 'Last Name',
@@ -90,6 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Email Input
                   _buildTextField(
                     controller: _emailController,
                     label: 'Email',
@@ -98,6 +103,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Password Input
                   _buildPasswordField(
                     controller: _passwordController,
                     label: 'Password',
@@ -105,18 +111,19 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Confirm Password Input
                   _buildPasswordField(
                     controller: _confirmPasswordController,
                     label: 'Confirm Password',
                     isConfirm: true,
-                    validator:
-                        (value) =>
-                            value != _passwordController.text
-                                ? 'Passwords do not match'
-                                : null,
+                    validator: (value) =>
+                    value != _passwordController.text
+                        ? 'Passwords do not match'
+                        : null,
                   ),
                   const SizedBox(height: 30),
 
+                  // Register Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -127,10 +134,35 @@ class _SignUpPageState extends State<SignUpPage> {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-
                         ),
+                        elevation: 5, // Add shadow effect
                       ),
                       child: const Text('Register'),
+                    ),
+                  ),
+
+                  // Social Button / SignUp Options
+                  const SizedBox(height: 30),
+                  const Center(child: Text("or continue with", style: TextStyle(color: Colors.white))),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _socialButton('assets/google.png'),
+                    ],
+                  ),
+                  const SizedBox(height: 35),
+
+                  // Already have account text
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      },
+                      child: const Text(
+                        "Already have an account? Login",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 ],
@@ -160,26 +192,25 @@ class _SignUpPageState extends State<SignUpPage> {
         print("Verification email sent!");
         if (userCredential.user != null && userCredential.user!.emailVerified) {
           print("Login successful, email verified!");
-          // Allow access to your app
         } else {
           print("Email not verified. Please check your inbox.");
           await FirebaseAuth.instance.signOut();
         }
-        // ✅ Show confirmation dialog
+        // Show confirmation dialog
         showDialog(
           context: context,
-          barrierDismissible: false, // Force user to press OK
+          barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Success"),
-              content: Text("Account created successfully!"),
+              title: const Text("Success"),
+              content: const Text("Account created successfully!"),
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                    Navigator.pushReplacementNamed(context, '/login'); // Navigate to login screen
+                    Navigator.of(context).pop();
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
-                  child: Text("OK"),
+                  child: const Text("OK"),
                 ),
               ],
             );
@@ -187,7 +218,6 @@ class _SignUpPageState extends State<SignUpPage> {
         );
       } catch (e) {
         setState(() {
-          // Optional: show error with SnackBar
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error: ${e.toString()}')),
           );
@@ -195,6 +225,7 @@ class _SignUpPageState extends State<SignUpPage> {
       }
     }
   }
+
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -217,8 +248,8 @@ class _SignUpPageState extends State<SignUpPage> {
       keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
       decoration: _inputDecoration(label, icon),
-      validator:
-          (value) => value == null || value.isEmpty ? 'Enter $label' : null,
+      validator: (value) =>
+      value == null || value.isEmpty ? 'Enter $label' : null,
     );
   }
 
@@ -257,10 +288,41 @@ class _SignUpPageState extends State<SignUpPage> {
         fillColor: Colors.white.withOpacity(0.2),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      validator:
-          validator ??
-          (value) =>
-              value == null || value.length < 6 ? 'Minimum 6 characters' : null,
+      validator: validator ??
+              (value) =>
+          value == null || value.length < 6 ? 'Minimum 6 characters' : null,
+    );
+  }
+
+  Widget _socialButton(String assetPath) {
+    return GestureDetector(
+      onTap: () async {
+        final user = await AuthService().signInWithGoogle();
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, '/marketplace');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Google sign-in failed')),
+          );
+        }
+      },
+      child: Container(
+        width: 50,
+        height: 50,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Image.asset(assetPath, fit: BoxFit.contain),
+      ),
     );
   }
 }

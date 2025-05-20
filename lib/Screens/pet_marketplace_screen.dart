@@ -6,6 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
+// Import the AppColors class from your colors.dart file
+import 'package:petcare/Services/colors.dart';  // Adjust the path as necessary
+
 class PetMarketplaceScreen extends StatefulWidget {
   @override
   _PetMarketplaceScreenState createState() => _PetMarketplaceScreenState();
@@ -18,111 +21,151 @@ class _PetMarketplaceScreenState extends State<PetMarketplaceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Pet Marketplace")),
-      body: Column(
-        children: [
-          // Search Box
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search pets by breed or category...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) => setState(() => searchQuery = value.trim()),
-            ),
+      appBar: AppBar(
+        title: const Text("Pet Marketplace"),
+        backgroundColor: AppColors.primaryColor, // Using primaryColor for the AppBar
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              AppColors.primaryColor,
+              AppColors.secondaryColor,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-
-          // Category Filter Chips
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: ["all", "sale", "adoption", "sitting"].map((category) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: ChoiceChip(
-                    label: Text(category.toUpperCase()),
-                    selected: selectedCategory == category,
-                    onSelected: (_) => setState(() => selectedCategory = category),
+        ),
+        child: Column(
+          children: [
+            // Search Box with white background and shadow effect
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Material(
+                elevation: 5, // Adding elevation to the Material widget for shadow effect
+                borderRadius: BorderRadius.circular(12),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search pets by breed or category...',
+                    hintStyle: TextStyle(color: Colors.grey), // Optional: Change hint text color
+                    prefixIcon: Icon(Icons.search, color: Colors.black), // Search icon color
+                    filled: true,
+                    fillColor: Colors.white, // White background for the search box
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12), // Rounded corners
+                      borderSide: BorderSide.none, // No border
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                );
-              }).toList(),
+                  onChanged: (value) => setState(() => searchQuery = value.trim()),
+                ),
+              ),
             ),
-          ),
 
-          // Ads List
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('marketplace_ads')
-                  .orderBy('createdAt', descending: true)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+            // Category Filter Chips with color and elevation effect
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: ["all", "sale", "adoption", "sitting"].map((category) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                    child: ChoiceChip(
+                      label: Text(category.toUpperCase(), style: TextStyle(color: Colors.white)),
+                      selected: selectedCategory == category,
+                      selectedColor: AppColors.secondaryColor,
+                      backgroundColor: AppColors.primaryColor,
+                      onSelected: (_) => setState(() => selectedCategory = category),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
 
-                // Filter ads based on selected category and search query
-                final filteredAds = snapshot.data!.docs.where((doc) {
-                  final data = doc.data() as Map<String, dynamic>;
-                  final categoryMatch = selectedCategory == "all" || data['category'] == selectedCategory;
-                  final searchLower = searchQuery.toLowerCase();
-                  final matchesSearch = searchQuery.isEmpty ||
-                      (data['breed']?.toLowerCase().contains(searchLower) ?? false) ||
-                      (data['category']?.toLowerCase().contains(searchLower) ?? false);
-                  return categoryMatch && matchesSearch;
-                }).toList();
+            // Ads List with enhanced cards
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('marketplace_ads')
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
 
-                if (filteredAds.isEmpty) {
-                  return Center(child: Text("No ads found."));
-                }
+                  // Filter ads based on selected category and search query
+                  final filteredAds = snapshot.data!.docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final categoryMatch = selectedCategory == "all" || data['category'] == selectedCategory;
+                    final searchLower = searchQuery.toLowerCase();
+                    final matchesSearch = searchQuery.isEmpty ||
+                        (data['breed']?.toLowerCase().contains(searchLower) ?? false) ||
+                        (data['category']?.toLowerCase().contains(searchLower) ?? false);
+                    return categoryMatch && matchesSearch;
+                  }).toList();
 
-                return ListView.builder(
-                  itemCount: filteredAds.length,
-                  itemBuilder: (context, index) {
-                    final data = filteredAds[index].data() as Map<String, dynamic>;
+                  if (filteredAds.isEmpty) {
+                    return Center(child: Text("No ads found."));
+                  }
 
-                    return Card(
-                      margin: EdgeInsets.all(8),
-                      child: ListTile(
-                        leading: data['imageUrl'] != null
-                            ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            base64Decode(data['imageUrl']),
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
+                  return ListView.builder(
+                    itemCount: filteredAds.length,
+                    itemBuilder: (context, index) {
+                      final data = filteredAds[index].data() as Map<String, dynamic>;
+
+                      return Card(
+                        margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        elevation: 5, // Card shadow
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          leading: data['imageUrl'] != null
+                              ? ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.memory(
+                              base64Decode(data['imageUrl']),
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                              : Icon(Icons.pets, size: 40, color: AppColors.primaryColor),
+
+                          title: Text("${data['breed'] ?? 'Unknown Breed'} (${data['category']?.toUpperCase() ?? 'N/A'})",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(
+                            "Age: ${data['age'] ?? 'N/A'}\n"
+                                "Health: ${data['healthStatus'] ?? 'N/A'}\n"
+                                "Price: ${data['price']?.toString() ?? 'N/A'}",
+                            style: TextStyle(color: Colors.black54),
                           ),
-                        )
-                            : Icon(Icons.pets, size: 40),
-
-                        title: Text("${data['breed'] ?? 'Unknown Breed'} (${data['category']?.toUpperCase() ?? 'N/A'})"),
-                        subtitle: Text(
-                          "Age: ${data['age'] ?? 'N/A'}\n"
-                              "Health: ${data['healthStatus'] ?? 'N/A'}\n"
-                              "Price: ${data['price']?.toString() ?? 'N/A'}",
+                          trailing: IconButton(
+                            icon: Icon(FontAwesomeIcons.whatsapp, color: Colors.green),
+                            onPressed: () {
+                              final contactNumber = data['contactNumber'] ?? '';
+                              if (contactNumber.isNotEmpty) {
+                                launchUrl(Uri.parse("https://wa.me/$contactNumber"));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("No contact number provided")),
+                                );
+                              }
+                            },
+                          ),
                         ),
-                        trailing: IconButton(
-                          icon: Icon(FontAwesomeIcons.whatsapp, color: Colors.green),
-                          onPressed: () {
-                            final contactNumber = data['contactNumber'] ?? '';
-                            if (contactNumber.isNotEmpty) {
-                              launchUrl(Uri.parse("https://wa.me/$contactNumber"));
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("No contact number provided")),
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -131,9 +174,10 @@ class _PetMarketplaceScreenState extends State<PetMarketplaceScreen> {
             MaterialPageRoute(builder: (context) => const UploadPetAdScreen()),
           );
         },
-        backgroundColor: Colors.teal,
+        backgroundColor: AppColors.primaryColor, // Customized FAB background color
         child: const Icon(Icons.add),
         tooltip: 'Post New Ad',
+        elevation: 10, // Elevated FAB to give it prominence
       ),
     );
   }

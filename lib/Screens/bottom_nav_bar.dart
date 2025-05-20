@@ -43,8 +43,8 @@ class _BottomNavBar extends State<BottomNavBar> {
         currentIndex: _selectedIndex,
         onTap: _onNavItemTapped,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Market'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Marketplace'),
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Nearby Services'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:petcare/Services/colors.dart';
 import '../Services/auth_service.dart';
-
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -46,8 +45,8 @@ class _LoginPageState extends State<LoginPage> {
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color.fromARGB(255, 2, 64, 45),
-              Color.fromARGB(255, 23, 237, 173),
+              AppColors.primaryColor,
+              AppColors.secondaryColor,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -78,9 +77,16 @@ class _LoginPageState extends State<LoginPage> {
                   Container(
                     width: screenWidth * 0.3,
                     height: screenWidth * 0.3,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     padding: const EdgeInsets.all(8),
                     child: ClipOval(
@@ -107,9 +113,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     validator:
                         (value) =>
-                            value == null || !value.contains('@')
-                                ? 'Enter valid email'
-                                : null,
+                    value == null || !value.contains('@')
+                        ? 'Enter valid email'
+                        : null,
                   ),
                   SizedBox(height: screenHeight * 0.02),
                   TextFormField(
@@ -141,9 +147,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     validator:
                         (value) =>
-                            value == null || value.length < 6
-                                ? 'Minimum 6 characters'
-                                : null,
+                    value == null || value.length < 6
+                        ? 'Minimum 6 characters'
+                        : null,
                   ),
 
                   SizedBox(height: screenHeight * 0.015),
@@ -190,7 +196,6 @@ class _LoginPageState extends State<LoginPage> {
                       _socialButton(
                         'assets/google.png',
                       ),
-
                     ],
                   ),
 
@@ -215,23 +220,30 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _socialButton(String assetPath) {
     return GestureDetector(
-        onTap: () async {
-          final user = await AuthService().signInWithGoogle();
-          if (user != null) {
-            Navigator.pushReplacementNamed(context, '/marketplace');
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Google sign-in failed')),
-            );
-          }
-        },
+      onTap: () async {
+        final user = await AuthService().signInWithGoogle();
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, '/marketplace');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Google sign-in failed')),
+          );
+        }
+      },
       child: Container(
         width: 50,
         height: 50,
         padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: Image.asset(assetPath, fit: BoxFit.contain),
       ),
