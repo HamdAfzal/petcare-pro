@@ -223,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
       onTap: () async {
         final user = await AuthService().signInWithGoogle();
         if (user != null) {
-          Navigator.pushReplacementNamed(context, '/marketplace');
+          Navigator.pushReplacementNamed(context, '/bottomnavbar');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Google sign-in failed')),

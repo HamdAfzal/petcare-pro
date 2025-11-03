@@ -1,12 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:petcare/Routes/routes.dart';
-import 'package:petcare/Screens/pet_marketplace_screen.dart';
 import 'package:petcare/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Providers/marketplace_ad_provider.dart';
-import 'Screens/login_page.dart';
 import 'Services/firebase_options.dart'; // adjust the path if needed
 
 void main() async {

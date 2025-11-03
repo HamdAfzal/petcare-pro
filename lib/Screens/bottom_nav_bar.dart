@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:petcare/Screens/geolocation.dart';
 import 'package:petcare/Screens/pet_marketplace_screen.dart';
+import 'package:petcare/Screens/skin_disease.dart';
+
+import 'breed_identification.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -16,7 +19,8 @@ class _BottomNavBar extends State<BottomNavBar> {
   final List<Widget> _pages = [
     PetMarketplaceScreen(),
     GeolocationScreen(),
-    Center(child: Text('Profile')),
+    BreedIdentificationScreen(),
+    DiseaseIdentificationScreen(),
   ];
 
   void _onPageChanged(int index) {
@@ -45,7 +49,8 @@ class _BottomNavBar extends State<BottomNavBar> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Marketplace'),
           BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Nearby Services'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.search),label: 'BreedIdentification'),
+          BottomNavigationBarItem(icon: Icon(Icons.lunch_dining),label: 'Disease Identification'),
         ],
       ),
     );
